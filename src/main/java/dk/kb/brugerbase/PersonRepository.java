@@ -3,6 +3,7 @@ package dk.kb.brugerbase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.query.LdapQuery;
@@ -24,13 +25,17 @@ public class PersonRepository {
 
     private static Logger log = LoggerFactory.getLogger(PersonRepository.class);
 
-
     @Autowired
     private LdapTemplate ldapTemplate;
 
+    @Value("${test.countlimit}")
+    private int countLimit;
+    
+    @Value("${test.dn.base}")
+    private String dnBase;
 
     public void createPerson(Person person) {
-        String dn = "uid="+person.getUid()+",ou=People,dc=example,dc=lan";
+        String dn = "uid="+person.getUid()+"," + dnBase;
         Attributes attrs = new BasicAttributes();
         BasicAttribute ocattr = new BasicAttribute("objectclass");
         ocattr.add("top");
@@ -45,12 +50,12 @@ public class PersonRepository {
     }
 
     public void deletePerson(Person person) {
-        String dn = "uid="+person.getUid()+",ou=People,dc=example,dc=lan";
+        String dn = "uid="+person.getUid()+"," + dnBase;
         ldapTemplate.unbind(dn);
     }
 
     public void modifyAttribute(String uid, String attribute, String value) {
-        String dn = "uid="+uid+",ou=People,dc=example,dc=lan";
+        String dn = "uid="+uid+"," + dnBase;
         Attribute attr = new BasicAttribute(attribute, value);
         ModificationItem item = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, attr);
         ldapTemplate.modifyAttributes(dn, new ModificationItem[] {item});
@@ -59,9 +64,9 @@ public class PersonRepository {
     public List<Person> getPeople() {
         LdapQuery query = query()
                 .searchScope(SearchScope.SUBTREE)
-                .countLimit(10)
+                .countLimit(countLimit)
                 .attributes("*")
-                .base("ou=People,dc=example,dc=lan")
+                .base(dnBase)
                 .where("objectClass").is("person");
 
         return ldapTemplate.search(query, new PersonAttributesMapper());
@@ -70,9 +75,9 @@ public class PersonRepository {
     public Person getPerson(String uid) {
         LdapQuery query = query()
                 .searchScope(SearchScope.SUBTREE)
-                .countLimit(10)
+                .countLimit(countLimit)
                 .attributes("*")
-                .base("ou=People,dc=example,dc=lan")
+                .base(dnBase)
                 .where("uid").is(uid);
 
         List<Person> result = ldapTemplate.search(query, new PersonAttributesMapper());
@@ -82,8 +87,6 @@ public class PersonRepository {
         return null;
 
     }
-
-
 
     private class PersonAttributesMapper implements AttributesMapper<Person> {
         public Person mapFromAttributes(Attributes attrs) throws NamingException {
