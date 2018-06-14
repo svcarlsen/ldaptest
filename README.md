@@ -10,7 +10,7 @@ git clone https://github.com/minkwe/389ds.git
 
 cd 389ds
 
-`
+```
 #Create docker image
 docker-compose up
 
@@ -35,4 +35,4 @@ docker-compose start
 docker-compose rm
 docker-compose up
 
-`
+```
