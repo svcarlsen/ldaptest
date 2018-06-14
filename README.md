@@ -6,11 +6,11 @@ java -jar ldaptest.jar --spring.config.location=/home/svc/ldaptest/local.propert
 
 # Starting 389ds using docker
 
+```
 git clone https://github.com/minkwe/389ds.git
 
 cd 389ds
 
-```
 #Create docker image
 docker-compose up
 
