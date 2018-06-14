@@ -51,17 +51,9 @@ public class Application extends SpringBootServletInitializer {
 
         if (cleanuprepositoryBefore) {
         	log.info("Doing cleanup before starting test");
-        	int deleted = 0;
-        	while(!personRepository.getPeople().isEmpty()) {
-        		List<Person> people = personRepository.getPeople();
-        		for (Person p : people){
-        			personRepository.deletePerson(p);
-        			deleted++;
-        			log.info("Deleted person #{}: {}",deleted, p);
-        		}
-        	}
-        	log.info("Deleted {} persons", deleted);
+        	deleteall();	
         }
+        
         List<Person> people = personRepository.getPeople();
         log.info("Found {} people", people.size());
         if (!people.isEmpty()) {
@@ -75,8 +67,27 @@ public class Application extends SpringBootServletInitializer {
         	}
         }
         
+        long completeTime = runTestsuite();
+        log.info("TestSuite took {} millis ({} secs)", completeTime, completeTime/1000);
+          
+        log.info("Starting to create {} persons", testSize);
+        createPersons(testSize);
+        
+        completeTime = runTestsuite();
+        log.info("TestSuite took {} millis ({} secs)", completeTime, completeTime/1000);
 
-        Person person = personRepository.getPerson("testuser");
+        if (cleanuprepositoryAfter) {
+        	log.info("Doing cleanup after finishing starting test");
+        	deleteall();
+        }
+        
+        System.exit(-1);
+    }
+
+	private long runTestsuite() {
+		log.info("Starting testsuite");
+		long startmillis = System.currentTimeMillis();
+		Person person = personRepository.getPerson("testuser");
         log.info("person " + person);
 
         person = new Person("testuser2","Test Testersen","Testersen","test@test.dk");
@@ -90,25 +101,22 @@ public class Application extends SpringBootServletInitializer {
         log.info("person " + person);
 
         personRepository.deletePerson(person);
-        log.info("Starting to create {} persons", testSize);
-        createPersons(testSize);
+        return System.currentTimeMillis() - startmillis;
+	}
 
-        if (cleanuprepositoryAfter) {
-        	log.info("Doing cleanup after finishing starting test");
-        	int deleted = 0;
-        	while(!personRepository.getPeople().isEmpty()) {
-        		List<Person> people1 = personRepository.getPeople();
-        		for (Person p : people1){
-        			personRepository.deletePerson(p);
-        			deleted++;
-        			log.info("Deleted person #{}: {}",deleted, p);
-        		}
-        	}
-        	log.info("Deleted {} persons", deleted);
-        }
-        
-        System.exit(-1);
-    }
+	private void deleteall() {
+		int deleted = 0;
+    	while(!personRepository.getPeople().isEmpty()) {
+    		List<Person> people = personRepository.getPeople();
+    		for (Person p : people){
+    			personRepository.deletePerson(p);
+    			deleted++;
+    			log.info("Deleted person #{}: {}",deleted, p);
+    		}
+    	}
+    	log.info("Deleted {} persons", deleted);
+		
+	}
 
 	private void createPersons(long testSize) {
 		long uidPrefix = System.currentTimeMillis();
