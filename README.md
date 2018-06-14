@@ -20,7 +20,9 @@ dockerldapsearch -b "dc=example,dc=lan"
 http://directory.apache.org/studio/download/download-linux.html
 
 `#` Make a LDAP connection to localhost:389 after your docker-image is up and running.
+
 `#` Username:    cn=Directory Manager
+
 `#` Password:         Admin123
 
 `#`You can stop and start the docker-image with:
